@@ -240,7 +240,23 @@ export const createUser = async (
     }
   };
 
-  
+  export const updateProgressScore = async (emailAddress, value, installation, agreement, inspected, finished) => {
+    try {
+        const userCollections = await normalUsers();
+        
+        const updatedUser = await userCollections.updateOne(
+            { emailAddress: emailAddress },
+            { $set: { progress: value, installation: installation, agreement: agreement, inspected: inspected, finished: finished} }
+          );
+
+          const usr = await userCollections.findOne({emailAddress:emailAddress})
+          usr._id = usr._id.toString();
+        return usr;
+
+    } catch (error) {
+      throw error;
+    }
+  };
 
 
 
@@ -248,4 +264,4 @@ export const createUser = async (
   
   
 
-  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser, getUserSelection, addApprovalRequest, viewAllApprovalRequests, isApprovalPresent}
+  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser, getUserSelection, addApprovalRequest, viewAllApprovalRequests, isApprovalPresent, updateProgressScore}

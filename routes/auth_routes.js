@@ -499,7 +499,9 @@ router.route('/sendApproval').get(async (req, res) => {
 
   
 
+
   const approvalReqID = await salesUsers.addApprovalRequest(custEmail, custSelectionArr);
+  const updatedUser = await salesUsers.updateProgressScore(custEmail, 60, true, true, false, false);
 
   let successMsg = `<div id="success" class="success" > Successfully Sent to Manager for Approval : Here is your RefID : ${approvalReqID}</div>`
       
