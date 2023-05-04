@@ -89,4 +89,79 @@ export const createUser = async (
   
   };
 
-  export default {createUser}
+  export const checkUser = async (emailAddress, password) => {
+
+    try {
+  
+      emailAddress = helpers.checkEmptyInputString(emailAddress, "Email Address");
+      emailAddress.toLowerCase();
+      helpers.checkEmptyInputString(password, "Password");
+  
+      helpers.checkValidEmail(emailAddress);
+      helpers.checkValidPassword(password);
+  
+      //since nothing blew up till here, let's query the db to check if an user collection with given email is present or not
+  
+      const usersCollection = await salesUsers();
+      const user = await usersCollection.findOne({emailAddress});
+  
+      if(!user){
+        throw `Either the email address or password is invalid`
+      }
+  
+      //took the code from professor's lecture code
+      let compareToMatch = await bcrypt.compare(password, user.password);
+  
+      if (compareToMatch) {
+        console.log('The passwords match.. this is good');
+        user._id = user._id.toString()
+        return user;
+      } else {
+        //console.log('The passwords do not match, this is not good, they should match');
+        throw `Either the email address or password is invalid`
+      }
+  
+      //return {firstName: user.firstName, lastName: user.lastName, emailAddress: user.emailAddress, role: user.role}
+  
+  
+  
+    } catch (error) {
+      throw error;
+    }
+  
+  };
+
+
+  export const viewAllBookings = async () => {
+    try {
+      const bookDemoCollection = await bookDemos();
+      const bookings = await bookDemoCollection.find({}).toArray();
+  
+      for (let i = 0; i < bookings.length; i++) {
+        bookings[i]._id = bookings[i]._id.toString();
+      }
+  
+      return bookings;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  export const viewAllCustomers = async () => {
+    try {
+      const normalUsersCollection = await normalUsers();
+      const customers = await normalUsersCollection.find({}).toArray();
+  
+      for (let i = 0; i < customers.length; i++) {
+        customers[i]._id = customers[i]._id.toString();
+      }
+  
+      return customers;
+    } catch (error) {
+      throw error;
+    }
+  };
+  
+  
+
+  export default {createUser, checkUser, viewAllBookings}

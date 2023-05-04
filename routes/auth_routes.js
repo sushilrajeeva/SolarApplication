@@ -227,22 +227,43 @@ router
   
         //redirecting based on the loginUser.role
 
-        
-        
-      }else{
-        // console.log("sales user checkUser method will be triggered");
-        console.log("Sales User route is hit!");
-      }
-
-      //const loginUser = await users.checkUser(emailAddress, password);
-
-      let installation = req.session.user.installation
+        let installation = req.session.user.installation
       let agreement = req.session.user.agreement
 
       console.log("installation -> ", installation);
     console.log("agreement ->", agreement);
 
       return res.render('normaldashboard', {title: 'User Dashboard', username: req.session.user.firstName, installation: installation, agreement: agreement});
+
+        
+        
+      }else if(userType==="sales"){ 
+        // console.log("sales user checkUser method will be triggered");
+        console.log("Sales User route is hit!");
+        const loginUser = await salesUsers.checkUser(emailAddress, password);
+        req.session.user = {
+          _id: loginUser._id,
+          firstName: loginUser.firstName,
+          middleName: loginUser.middleName,
+          lastName: loginUser.lastName,
+          emailAddress: loginUser.emailAddress,
+          phoneNumber: loginUser.phoneNumber, 
+          address: loginUser.address,
+          city: loginUser.city, 
+          state: loginUser.state, 
+          country: loginUser.country, 
+          dob: loginUser.dob,
+          role: loginUser.role
+          
+        };
+
+        return res.render('salesdashboard', {title: 'Sales Dashboard', username: req.session.user.firstName});
+
+      }
+
+      //const loginUser = await users.checkUser(emailAddress, password);
+
+      
 
       
 
@@ -401,6 +422,25 @@ router.route('/normaldashboard').get(async (req, res)=>{
 router.post('/upload', upload.single('image'), (req, res) => {
   res.status(200).send('Image uploaded and saved.');
 });
+
+router.route('/viewallbookings').get(async (req, res) => {
+  console.log("View All Bookings route is hit!");
+
+  try {
+    const bookings = await salesUsers.viewAllBookings();
+    console.log("All Bookings -> ", bookings);
+
+    res.render('viewallbookings', {title: 'View All Bookings', bookings: bookings });
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+});
+
+router.route('/salesdashboard').get(async (req, res)=>{
+  return res.render('salesdashboard', {title: 'Sales Dashboard', username: req.session.user.firstName});
+})
+
 
 
 
