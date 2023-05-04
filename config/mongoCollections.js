@@ -18,9 +18,11 @@ const getCollectionFn = (collection) => {
 export const normalUsers = getCollectionFn('normalUsers');
 export const salesUsers = getCollectionFn('salesUsers');
 export const managementUsers = getCollectionFn('managementUsers');
-export const crewUsers = getCollectionFn('crewUsers');
+
 export const bookDemos = getCollectionFn('bookDemos');
 export const feedbacks = getCollectionFn('feedbacks');
 export const solarSelection = getCollectionFn('solarSelection');
 export const approvalRequests = getCollectionFn('approvalRequests');
 export const approvedRequests = getCollectionFn('approvedRequests');
+
+export const crewUsers = getCollectionFn('crewUsers');

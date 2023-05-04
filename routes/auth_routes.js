@@ -14,6 +14,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import multer from 'multer';
 import managementUsers from '../data/managementUsers.js';
+import crewUsers from '../data/crewUsers.js';
 
 
 const storage = multer.diskStorage({
@@ -34,6 +35,24 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const crewStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const username = req.session.user.emailAddress;
+    const dir = `./public/img/${username}/crew`;
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const crewUpload = multer({ storage: crewStorage });
+
 
 
 //refered https://www.youtube.com/watch?v=TDe7DRYK8vU this youtube video for passing the middlewear [timestamp - 26:30 ish ]
@@ -44,6 +63,10 @@ router.route('/').get( async (req, res) => {
 
 router.route('/aboutus').get(async(req, res) => {
   return res.render('aboutus', {title: 'About Us | Solaris T6'})
+});
+
+router.route('/crewdashboard').get(async(req, res) => {
+  return res.render('crewdashboard', {title: 'Crew Dashboard', username: req.session.user.firstName})
 });
 
 router.route('/services').get(async(req, res) => {
@@ -172,6 +195,10 @@ router
       const userID = await managementUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
       let successMsg = `<div id="success" class="success" > Management User Registered Successfully! Ref ID is : ${userID}</div>`
       return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
+    }else if(userType.toLowerCase() === "crew"){
+      const userID = await crewUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
+      let successMsg = `<div id="success" class="success" > Crew User Registered Successfully! Ref ID is : ${userID}</div>`
+      return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
     }
 
     
@@ -286,6 +313,28 @@ router
         };
 
         return res.render('managementdashboard', {title: 'Management Dashboard', username: req.session.user.firstName});
+
+      }else if(userType.toLowerCase()==="crew"){ 
+        // console.log("sales user checkUser method will be triggered");
+        console.log("Crew User route is hit!");
+        const loginUser = await crewUsers.checkUser(emailAddress, password);
+        req.session.user = {
+          _id: loginUser._id,
+          firstName: loginUser.firstName,
+          middleName: loginUser.middleName,
+          lastName: loginUser.lastName,
+          emailAddress: loginUser.emailAddress,
+          phoneNumber: loginUser.phoneNumber, 
+          address: loginUser.address,
+          city: loginUser.city, 
+          state: loginUser.state, 
+          country: loginUser.country, 
+          dob: loginUser.dob,
+          role: loginUser.role
+          
+        };
+
+        return res.render('crewdashboard', {title: 'Crew Dashboard', username: req.session.user.firstName});
 
       }
 
@@ -757,6 +806,107 @@ router.route('/viewAllApprovalRequests').get(async (req, res) => {
     approvalRequests: approvalRequests,
     approvedList: approvedList,
   });
+});
+
+
+router.route('/viewInspections').get(async (req, res) =>{
+  console.log("View Inspection route is hit!");
+  const approvedList = await managementUsers.viewAllApprovedRequests();
+  // const userList = [];
+  // for(let i=0; i<approvedList.length; i++){
+  //   let user = await normalUsers.getUserById(approvedList[i].userID);
+  //   userList.push(user)
+  // }
+
+  res.render('userinspect', {title: 'Inspect Users', approvedList: approvedList})
+});
+
+router.route('/viewFinalCust/:userID').get(async (req, res) => {
+  console.log("View Final Cust is triggered");
+  const userID = req.params.userID;
+  console.log(userID);
+  let user = await normalUsers.getUserById(userID);
+
+  res.render('userview', {title: "User View", user: user})
+  
+  // Handle the request and render the appropriate view
+});
+
+router.route('/crewPhotoDocumentation/:emailAddress').get(async(req, res) => {
+  const username = req.params.emailAddress;
+
+  const imageDir = path.join(process.cwd(), 'public', 'img', username);
+  const crewDir = path.join(process.cwd(), 'public', 'img', username, 'crew');
+
+  try {
+    const imageNames = await fs.readdir(imageDir);
+    const crewNames = await fs.readdir(crewDir);
+    const updatedUsr = await salesUsers.updateProgressScore(username, 80, true, true, true, false)
+    return res.render('crewuserimage', { title: 'Photo Documentation', imageNames: imageNames, username: username , crewNames: crewNames});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error reading user images.');
+  }
+
+  // Handle the request and render the appropriate view
+});
+
+router.route('/crewImageUpload/:emailAddress').get(async (req, res) => {
+  const emailAddress = req.params.emailAddress;
+  const updatedUser = await salesUsers.updateProgressScore(emailAddress,90, true, true, true, false)
+  return res.render('crewimageupload',{title: 'Crew Upload Image'});
+
+  // Handle the request and render the appropriate view
+})
+
+router.post('/crewImageUpload', crewUpload.single('image'), (req, res) => {
+  
+  res.status(200).send('Image uploaded and saved.');
+});
+
+router.route('/approve/:emailAddress').get(async (req, res) => {
+  const emailAddress = req.params.emailAddress;
+  const updatedUser = await salesUsers.updateProgressScore(emailAddress, 100, true, true, true, true);
+  let navBar = `<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <div class="container">
+      <a class="navbar-brand" href="#">SOLARIS T6</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/crewdashboard">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/aboutus">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/service">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contact">Contact</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/userchat">Chat</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">logout</a>
+          </li>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-light" href="/bookdemo">Book Demo</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>`
+
+
+
+    res.render('success', {title: 'Solar Selection Successful', success: `<div id="success" class="success" > Successfully Approved User Solar Pannel Installation!</div>`, navBar: navBar})
+  
+  // Handle the request and render the appropriate view
 });
 
 
