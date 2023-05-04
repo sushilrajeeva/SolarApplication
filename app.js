@@ -8,6 +8,7 @@ const app = express();
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import configRoutes from './routes/index.js';
+import { solarSelection } from './config/mongoCollections.js';
 
 import {fileURLToPath} from 'url';
 import {dirname} from 'path';
@@ -43,6 +44,7 @@ app.use(
 
 
 app.use(middlewareMethods.loggingMiddleware);
+
 
 
 //console.log("Before app is called");
