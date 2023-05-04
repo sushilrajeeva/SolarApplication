@@ -360,9 +360,47 @@ router.route('/solarSelection').post(async(req,res)=>{
     console.log("New Progress -> ", req.session.user.progress);
     console.log("Installation ->", req.session.user.installation);
 
+    let navBar = `<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <div class="container">
+      <a class="navbar-brand" href="#">SOLARIS T6</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/normaldashboard">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/aboutus">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/service">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contact">Contact</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/Image">Image Uploader</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/userchat">Chat</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">logout</a>
+          </li>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-light" href="/bookdemo">Book Demo</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>`
 
 
-    res.render('success', {title: 'Solar Selection Successful', success: `<div id="success" class="success" > Successfully Recorded Solar Pannel Selection!</div>`})
+
+    res.render('success', {title: 'Solar Selection Successful', success: `<div id="success" class="success" > Successfully Recorded Solar Pannel Selection!</div>`, navBar: navBar})
   } catch (err) {
     console.error('Error inserting solarSelectionData:', err);
     res.status(500).json({ message: 'Error inserting solarSelectionData' });
@@ -405,7 +443,45 @@ router.route('/recordagreement').get(async (req, res)=>{
   console.log("updatedUser ->", updatedUser.agreement);
   console.log("session ->", req.session.agreement);
 
-  res.render('success', {title: 'Solar User Agreement Signed Successful', success: `<div id="success" class="success" > Successfully Signed SolarisT6 Application Agreement!</div>`})
+  let navBar = `<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+  <div class="container">
+    <a class="navbar-brand" href="#">SOLARIS T6</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/normaldashboard">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/aboutus">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/service">Services</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contact">Contact</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Image">Image Uploader</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/userchat">Chat</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">logout</a>
+        </li>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-outline-light" href="/bookdemo">Book Demo</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>`
+
+  res.render('success', {title: 'Solar User Agreement Signed Successful', success: `<div id="success" class="success" > Successfully Signed SolarisT6 Application Agreement!</div>`, navBar: navBar})
 
 })
 
@@ -503,9 +579,42 @@ router.route('/sendApproval').get(async (req, res) => {
   const approvalReqID = await salesUsers.addApprovalRequest(custEmail, custSelectionArr);
   const updatedUser = await salesUsers.updateProgressScore(custEmail, 60, true, true, false, false);
 
+  let navBar = `<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+  <div class="container">
+    <a class="navbar-brand" href="#">SOLARIS T6</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/salesdashboard">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/aboutus">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/service">Services</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contact">Contact</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/userchat">Chat</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">logout</a>
+        </li>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>`
+
   let successMsg = `<div id="success" class="success" > Successfully Sent to Manager for Approval : Here is your RefID : ${approvalReqID}</div>`
       
-      return res.render('success', {title: 'Approval Sent!', success: successMsg});
+      return res.render('success', {title: 'Approval Sent!', success: successMsg, navBar: navBar});
 
   
 });
