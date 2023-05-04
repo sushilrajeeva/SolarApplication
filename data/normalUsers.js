@@ -4,6 +4,7 @@ import {Router} from 'express';
 import {ObjectId} from 'mongodb';
 import {normalUsers} from '../config/mongoCollections.js'
 import { bookDemos } from '../config/mongoCollections.js';
+import { solarSelection } from '../config/mongoCollections.js';
 import helpers from '../helpers.js'
 
 import bcrypt from 'bcryptjs';
@@ -109,6 +110,11 @@ export const createUser = async (
       dob: dob,
       role: userType,
       password: hashedPassword,
+      progress: 0,
+      installation: false,
+      agreement: false,
+      inspected: false,
+      finished: false
     }
 
     const insertInfo = await usersCollection.insertOne(normalUserData);
@@ -154,7 +160,8 @@ export const checkUser = async (emailAddress, password) => {
 
     if (compareToMatch) {
       console.log('The passwords match.. this is good');
-      return {_id: user._id.toString(), firstName: user.firstName, middleName: user.middleName, lastName: user.lastName, emailAddress: user.emailAddress, phoneNumber: user.phoneNumber, address:user.address, city: user.city, state: user.state, country: user.country, dob: user.dob, role: user.role}
+      user._id = user._id.toString()
+      return user;
     } else {
       //console.log('The passwords do not match, this is not good, they should match');
       throw `Either the email address or password is invalid`
@@ -170,5 +177,114 @@ export const checkUser = async (emailAddress, password) => {
 
 };
 
+export const hasListing = async (emailAddress) => {
+
+  try {
+
+    //since nothing blew up till here, let's query the db to check if an user collection with given email is present or not
+
+    const usersCollection = await normalUsers();
+    const user = await usersCollection.findOne({emailAddress});
+
+    const currentProgress = user.progress;
+
+    console.log("Current Progress -> ", currentProgress);
+
+    let solarEmpty = false;
+ 
+    //checking if this valid email id is already a user or not in our db
+    const solarSelectionCollection = await solarSelection();
+    const solar = await solarSelectionCollection.findOne({userID: emailAddress});
+
+    if(!solar){
+      solarEmpty = true
+
+      console.log("Am i called");
+    }
+
+    if(!solarEmpty){
+      if(currentProgress==="0" || currentProgress === 0){
+        const updateResult = await usersCollection.updateOne(
+          { emailAddress: emailAddress },
+          { $set: { progress: 30, installation: true} }
+        );
+      }
+
+      const updatedUser = await usersCollection.findOne({emailAddress})
+      updatedUser._id = updatedUser._id.toString();
+
+      return updatedUser;
+
+      
+
+
+    //return {firstName: user.firstName, lastName: user.lastName, emailAddress: user.emailAddress, role: user.role}
+
+
+      }
+  } catch (error) {
+    throw error;
+  }
+
+};
+
+export const agreementSigned = async (emailAddress) => {
+
+  try {
+
+    //since nothing blew up till here, let's query the db to check if an user collection with given email is present or not
+
+    const usersCollection = await normalUsers();
+    const user = await usersCollection.findOne({emailAddress});
+
+    const currentProgress = user.progress;
+
+    console.log("Current Progress -> ", currentProgress);
+
+    let solarEmpty = false;
+ 
+    //checking if this valid email id is already a user or not in our db
+    const solarSelectionCollection = await solarSelection();
+    const solar = await solarSelectionCollection.findOne({userID: emailAddress});
+
+    if(!solar){
+      solarEmpty = true
+
+      console.log("Am i called");
+    }
+
+    if(!solarEmpty){
+      if(currentProgress==="0" || currentProgress === 0){
+        const updateResult = await usersCollection.updateOne(
+          { emailAddress: emailAddress },
+          { $set: { progress: 30, installation: true} }
+        );
+      }else if(currentProgress === 30 || currentProgress === "30"){
+        const updateResult = await usersCollection.updateOne(
+          { emailAddress: emailAddress },
+          { $set: { progress: 50, installation: true, agreement: true} }
+        );
+      }
+
+      const updatedUser = await usersCollection.findOne({emailAddress})
+      updatedUser._id = updatedUser._id.toString();
+
+      return updatedUser;
+
+      
+
+
+    //return {firstName: user.firstName, lastName: user.lastName, emailAddress: user.emailAddress, role: user.role}
+
+
+      }
+  } catch (error) {
+    throw error;
+  }
+
+};
+
+
+
 //confirm with TAs if this additional code is required since we are already exporting functions individually
-export default {bookDemo,createUser,checkUser}
+export default {bookDemo,createUser,checkUser, hasListing, agreementSigned}

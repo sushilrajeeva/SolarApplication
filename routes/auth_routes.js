@@ -7,6 +7,30 @@ import middlewareMethods from '../middleware.js';
 import helpers from '../helpers.js';
 import normalUsers from '../data/normalUsers.js';
 import feedback from '../data/feedback.js';
+import { ObjectId } from 'mongodb';
+import { solarSelection } from '../config/mongoCollections.js';
+
+import fs from 'fs';
+import multer from 'multer';
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const username = req.body.username;
+    const dir = `./public/img/${username}`;
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage: storage });
+
 
 
 //refered https://www.youtube.com/watch?v=TDe7DRYK8vU this youtube video for passing the middlewear [timestamp - 26:30 ish ]
@@ -174,6 +198,7 @@ router
         console.log("primary user checkUser method will be triggered");
         const loginUser = await normalUsers.checkUser(emailAddress, password);
         req.session.user = {
+          _id: loginUser._id,
           firstName: loginUser.firstName,
           middleName: loginUser.middleName,
           lastName: loginUser.lastName,
@@ -185,7 +210,15 @@ router
           country: loginUser.country, 
           dob: loginUser.dob,
           role: loginUser.role,
+          progress: loginUser.progress,
+          installation: loginUser.installation,
+          agreement: loginUser.agreement,
+          inspected: loginUser.inspected,
+          finished: loginUser.finished
+          
         };
+
+
   
         //redirecting based on the loginUser.role
 
@@ -198,9 +231,13 @@ router
 
       //const loginUser = await users.checkUser(emailAddress, password);
 
-      
+      let installation = req.session.user.installation
+      let agreement = req.session.user.agreement
 
-      return res.render('normaldashboard', {title: 'User Dashboard', username: req.session.user.firstName});
+      console.log("installation -> ", installation);
+    console.log("agreement ->", agreement);
+
+      return res.render('normaldashboard', {title: 'User Dashboard', username: req.session.user.firstName, installation: installation, agreement: agreement});
 
       
 
@@ -238,11 +275,124 @@ router.route('/error').get(async (req, res) => {
   res.render('error', {title: 'error'})
 });
 
+
+
 router.route('/logout').get(middlewareMethods.logoutMiddleware, async (req, res) => {
   //code here for 
   let firstName = req.session.user.firstName;
   req.session.destroy();
   res.render('logout', {title: 'logout', firstName: firstName});
 });
+
+router.route('/solarSelection').post(async(req,res)=>{
+  console.log("Solar selection route is called");
+  console.log(req.body);
+  console.log(req.session.user.emailAddress);
+  const solarSelectionData = {
+    _id: new ObjectId(),
+    userID: req.session.user.emailAddress,
+    selection: [{
+      name: "solar-panel",
+      price: 5000
+    }, {
+      name: "solar-water-heater",
+      price: 2000
+    }]
+  }
+  //solarSelectionData._id = new ObjectId(); // Generate ObjectId on the server-side
+  //solarSelectionData.userID = req.session.user.emailAddress;
+
+  
+
+  try {
+    const solarSelectionCollection = await solarSelection();
+    const result = await solarSelectionCollection.insertOne(solarSelectionData);
+    console.log("hmm");
+    const updatedUser = await normalUsers.hasListing(req.session.user.emailAddress);
+    console.log("OK");
+
+    req.session.user = {
+      _id: updatedUser._id,
+      firstName: updatedUser.firstName,
+      middleName: updatedUser.middleName,
+      lastName: updatedUser.lastName,
+      emailAddress: updatedUser.emailAddress,
+      phoneNumber: updatedUser.phoneNumber, 
+      address: updatedUser.address,
+      city: updatedUser.city, 
+      state: updatedUser.state, 
+      country: updatedUser.country, 
+      dob: updatedUser.dob,
+      role: updatedUser.role,
+      progress: updatedUser.progress,
+      installation: updatedUser.installation,
+      agreement: updatedUser.agreement,
+      inspected: updatedUser.inspected,
+      finished: updatedUser.finished
+    };
+
+    console.log("New Progress -> ", req.session.user.progress);
+    console.log("Installation ->", req.session.user.installation);
+
+
+
+    res.render('success', {title: 'Solar Selection Successful', success: `<div id="success" class="success" > Successfully Recorded Solar Pannel Selection!</div>`})
+  } catch (err) {
+    console.error('Error inserting solarSelectionData:', err);
+    res.status(500).json({ message: 'Error inserting solarSelectionData' });
+  } 
+})
+
+router.route('/installationprogress').get(async (req, res)=>{
+  let progress = req.session.user.progress;
+  res.render('installationprogress', {title: "Installation Progress Bar", progress: progress})
+});
+
+router.route('/agreement').get(async (req, res)=>{
+  
+  res.render('agreement', {title: "User Agreement"})
+});
+
+router.route('/recordagreement').get(async (req, res)=>{
+  console.log("Hey .............wtf");
+  const updatedUser = normalUsers.agreementSigned(req.session.user.emailAddress);
+  req.session.user = {
+    _id: updatedUser._id,
+    firstName: updatedUser.firstName,
+    middleName: updatedUser.middleName,
+    lastName: updatedUser.lastName,
+    emailAddress: updatedUser.emailAddress,
+    phoneNumber: updatedUser.phoneNumber, 
+    address: updatedUser.address,
+    city: updatedUser.city, 
+    state: updatedUser.state, 
+    country: updatedUser.country, 
+    dob: updatedUser.dob,
+    role: updatedUser.role,
+    progress: updatedUser.progress,
+    installation: updatedUser.installation,
+    agreement: updatedUser.agreement,
+    inspected: updatedUser.inspected,
+    finished: updatedUser.finished
+  };
+
+  console.log("updatedUser ->", updatedUser.agreement);
+  console.log("session ->", req.session.agreement);
+
+  res.render('success', {title: 'Solar User Agreement Signed Successful', success: `<div id="success" class="success" > Successfully Signed SolarisT6 Application Agreement!</div>`})
+
+})
+
+router.route('/normaldashboard').get(async (req, res)=>{
+  //let progress = req.session.user.progress;
+  let installation = req.session.user.installation
+  let agreement = req.session.user.agreement
+
+  console.log("installation -> ", installation);
+    console.log("agreement ->", agreement);
+  res.render('normaldashboard', {title: 'User Dashboard', username: req.session.user.firstName, installation: installation, agreement: agreement})
+})
+
+
 
 export default router;
