@@ -4,6 +4,7 @@ import {salesUsers} from '../config/mongoCollections.js'
 import { bookDemos } from '../config/mongoCollections.js';
 import { solarSelection } from '../config/mongoCollections.js';
 import { normalUsers } from '../config/mongoCollections.js';
+import { approvalRequests } from '../config/mongoCollections.js';
 import helpers from '../helpers.js'
 
 import bcrypt from 'bcryptjs';
@@ -174,7 +175,37 @@ export const createUser = async (
       throw error;
     }
   };
+
+  export const getUserSelection = async (emailAddress) => {
+    try {
+        const solarSelectionCollection = await solarSelection();
+        const solar = await solarSelectionCollection.findOne({userID: emailAddress});
+  
+        solar._id = solar._id.toString();
+  
+      return solar;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  export const addApprovalRequest = async (emailAddress, selectionList) => {
+    try {
+        const approvalRequestCollection = await approvalRequests();
+        let approvalReqData = {
+            _id: new ObjectId(),
+            userID: emailAddress,
+            selectionList: selectionList
+        }
+        const approvalObj = await approvalRequestCollection.insertOne(approvalReqData);
+
+  
+      return approvalReqData._id.toString();
+    } catch (error) {
+      throw error;
+    }
+  };
   
   
 
-  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser}
+  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser, getUserSelection, addApprovalRequest}

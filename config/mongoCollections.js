@@ -22,3 +22,4 @@ export const crewUsers = getCollectionFn('crewUsers');
 export const bookDemos = getCollectionFn('bookDemos');
 export const feedbacks = getCollectionFn('feedbacks');
 export const solarSelection = getCollectionFn('solarSelection');
+export const approvalRequests = getCollectionFn('approvalRequests');

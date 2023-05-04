@@ -460,10 +460,48 @@ router.route('/customerdetail/:emailAddress').get(async (req, res) => {
   
   // You can now use the bookingId to fetch booking details or perform other actions.
   // For example, if you have a function called getBookingDetails, you can call it like this:
-  const customerDetail = await salesUsers.getBookingDetails(bookingId);
+  const customerDetail = await salesUsers.getUser(customerEmail);
+  const customerSelection = await salesUsers.getUserSelection(customerEmail);
 
-  return res.render('bookingdetails', { title: 'Booking Details', booking: bookingDetails });
+  let custName = `${customerDetail.firstName} ${customerDetail.middleName} ${customerDetail.lastName}`;
+  let custID = customerDetail._id;
+  let custEmail = customerDetail.emailAddress;
+  let custPhone = customerDetail.phoneNumber;
+  let custAddress = `${customerDetail.address}, ${customerDetail.city}, ${customerDetail.state}, ${customerDetail.country}`;
+  let custProgress = customerDetail.progress;
+  let installation = customerDetail.installation;
+  let agreement = customerDetail.agreement;
+  let inspected = customerDetail.inspected;
+  let finished = customerDetail.finished;
+  
+
+  //custSelectionArr is an array that contains objects -> each object has a name and a price attribute
+  let custSelectionArr = customerSelection.selection;
+  
+
+  return res.render('customerinfo', { title: 'Customer Information', custName: custName, custId: custID, custEmail: custEmail, custPhone: custPhone, custAddress: custAddress, custProgress: custProgress, installation: installation, agreement: agreement, inspected: inspected, finished: finished, custSelectionArr: JSON.stringify(custSelectionArr)});
+
 });
+
+router.route('/sendApproval').get(async (req, res) => {
+  console.log("Send Approval Route is Triggered");
+  const custEmail = req.query.custEmail;
+  const custSelectionArr = JSON.parse(decodeURIComponent(req.query.custSelectionArr));
+
+  console.log("Customer Email -> ", custEmail);
+  console.log("Customer Selection -> ", custSelectionArr);
+
+  
+
+  const approvalReqID = await salesUsers.addApprovalRequest(custEmail, custSelectionArr);
+
+  let successMsg = `<div id="success" class="success" > Successfully Sent to Manager for Approval : Here is your RefID : ${approvalReqID}</div>`
+      
+      return res.render('success', {title: 'Approval Successful!', success: successMsg});
+
+  
+});
+
 
 
 

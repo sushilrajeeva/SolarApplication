@@ -820,6 +820,57 @@ input[list] {
 	margin-bottom: 5px;
 	font-size: 1em;
   }
+
+
+
+ 
+
+.customer-card {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 500px;
+    padding: 20px;
+    text-align: left;
+}
+
+.customer-card h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.customer-card h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.customer-card p {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.customer-card ul {
+    margin-bottom: 15px;
+    padding-left: 20px;
+}
+
+.customer-card button {
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.customer-card button:hover {
+    background-color: #3e8e41;
+}
+
   
 
 
