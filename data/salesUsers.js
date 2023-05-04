@@ -205,7 +205,47 @@ export const createUser = async (
       throw error;
     }
   };
+
+  export const viewAllApprovalRequests = async () => {
+    try {
+        const approvalRequestCollection = await approvalRequests();
+        
+        const approvalList = await approvalRequestCollection.find({}).toArray();
+
+        for(let i=0; i<approvalList.length; i++){
+            approvalList[i]._id = approvalList[i]._id.toString();
+        }
+
+  
+      return approvalList;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  export const isApprovalPresent = async (emailAddress) => {
+    try {
+        const approvalRequestCollection = await approvalRequests();
+        
+        const approval = await approvalRequestCollection.findOne({userID: emailAddress});
+
+        if(approval){
+            return true;
+        }else {
+            return false
+        }
+
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  
+
+
+
+
   
   
 
-  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser, getUserSelection, addApprovalRequest}
+  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser, getUserSelection, addApprovalRequest, viewAllApprovalRequests, isApprovalPresent}

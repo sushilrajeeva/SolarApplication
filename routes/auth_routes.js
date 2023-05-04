@@ -462,6 +462,7 @@ router.route('/customerdetail/:emailAddress').get(async (req, res) => {
   // For example, if you have a function called getBookingDetails, you can call it like this:
   const customerDetail = await salesUsers.getUser(customerEmail);
   const customerSelection = await salesUsers.getUserSelection(customerEmail);
+  const isApprovalPresent = await salesUsers.isApprovalPresent(customerEmail)
 
   let custName = `${customerDetail.firstName} ${customerDetail.middleName} ${customerDetail.lastName}`;
   let custID = customerDetail._id;
@@ -477,9 +478,14 @@ router.route('/customerdetail/:emailAddress').get(async (req, res) => {
 
   //custSelectionArr is an array that contains objects -> each object has a name and a price attribute
   let custSelectionArr = customerSelection.selection;
+
+  console.log("Installation -> ", installation);
+  console.log(("Agreement -> ", agreement));
+
+  console.log("ISAPPROVAL->", isApprovalPresent);
   
 
-  return res.render('customerinfo', { title: 'Customer Information', custName: custName, custId: custID, custEmail: custEmail, custPhone: custPhone, custAddress: custAddress, custProgress: custProgress, installation: installation, agreement: agreement, inspected: inspected, finished: finished, custSelectionArr: JSON.stringify(custSelectionArr)});
+  return res.render('customerinfo', { title: 'Customer Information', custName: custName, custId: custID, custEmail: custEmail, custPhone: custPhone, custAddress: custAddress, custProgress: custProgress, installation: installation, agreement: agreement, inspected: inspected, finished: finished, custSelectionArr: JSON.stringify(custSelectionArr), isApprovalPresent: isApprovalPresent});
 
 });
 
@@ -497,7 +503,7 @@ router.route('/sendApproval').get(async (req, res) => {
 
   let successMsg = `<div id="success" class="success" > Successfully Sent to Manager for Approval : Here is your RefID : ${approvalReqID}</div>`
       
-      return res.render('success', {title: 'Approval Successful!', success: successMsg});
+      return res.render('success', {title: 'Approval Sent!', success: successMsg});
 
   
 });

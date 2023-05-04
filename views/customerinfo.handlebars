@@ -99,16 +99,19 @@
                 <li>{{name}} - ${{price}}</li>
             {{/each}}
         </ul>
-        {{#if installation}}
-            {{#if agreement}}
-                <button class="btn btn-primary" onclick="sendForApproval('{{custEmail}}', JSON.parse('{{custSelectionArr}}'))">Send for Approval</button>
-
+            {{#if installation}}
+                {{#if agreement}}
+                    {{#unless isApprovalPresent}}
+                        <button class="btn btn-primary" onclick="sendForApproval('{{custEmail}}', JSON.parse('{{custSelectionArr}}'))">Send for Approval</button>
+                    {{else}}
+                        <p>This user's details have already been sent to the Manager for approval.</p>
+                    {{/unless}}
+                {{else}}
+                    <p>User has not yet finished selecting installation and agreement.</p>
+                {{/if}}
             {{else}}
                 <p>User has not yet finished selecting installation and agreement.</p>
             {{/if}}
-        {{else}}
-            <p>User has not yet finished selecting installation and agreement.</p>
-        {{/if}}
     </div>
 
     <script>
