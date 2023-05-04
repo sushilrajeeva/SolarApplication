@@ -161,7 +161,20 @@ export const createUser = async (
       throw error;
     }
   };
+
+  export const getUser = async (emailAddress) => {
+    try {
+      const normalUsersCollection = await normalUsers();
+      const customer = await normalUsersCollection.findOne({emailAddress: emailAddress})
+  
+      customer._id = customer._id.toString();
+  
+      return customer;
+    } catch (error) {
+      throw error;
+    }
+  };
   
   
 
-  export default {createUser, checkUser, viewAllBookings}
+  export default {createUser, checkUser, viewAllBookings, viewAllCustomers, getUser}

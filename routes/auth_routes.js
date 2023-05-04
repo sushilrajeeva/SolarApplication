@@ -437,9 +437,34 @@ router.route('/viewallbookings').get(async (req, res) => {
   }
 });
 
+router.route('/viewallcustomers').get(async (req, res) => {
+  console.log("View All Customers route is hit!");
+
+  try {
+    const customers = await salesUsers.viewAllCustomers();
+    console.log("All customers -> ", customers);
+
+    res.render('viewallcustomers', {title: 'View All Customers', customers: customers });
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+});
+
 router.route('/salesdashboard').get(async (req, res)=>{
   return res.render('salesdashboard', {title: 'Sales Dashboard', username: req.session.user.firstName});
 })
+
+router.route('/customerdetail/:emailAddress').get(async (req, res) => {
+  const customerEmail = req.params.emailAddress;
+  
+  // You can now use the bookingId to fetch booking details or perform other actions.
+  // For example, if you have a function called getBookingDetails, you can call it like this:
+  const customerDetail = await salesUsers.getBookingDetails(bookingId);
+
+  return res.render('bookingdetails', { title: 'Booking Details', booking: bookingDetails });
+});
+
 
 
 
