@@ -13,6 +13,7 @@ import { solarSelection } from '../config/mongoCollections.js';
 import path from 'path';
 import fs from 'fs/promises';
 import multer from 'multer';
+import managementUsers from '../data/managementUsers.js';
 
 
 const storage = multer.diskStorage({
@@ -167,6 +168,10 @@ router
       const userID = await salesUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
       let successMsg = `<div id="success" class="success" > Sales User Registered Successfully! Ref ID is : ${userID}</div>`
       return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
+    }else if(userType.toLowerCase() === "management"){
+      const userID = await managementUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
+      let successMsg = `<div id="success" class="success" > Management User Registered Successfully! Ref ID is : ${userID}</div>`
+      return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
     }
 
     
@@ -200,7 +205,7 @@ router
     try {
       
 
-      if(userType==="normal user"){
+      if(userType.toLowerCase()==="normal user"){
         console.log("primary user checkUser method will be triggered");
         const loginUser = await normalUsers.checkUser(emailAddress, password);
         req.session.user = {
@@ -238,7 +243,7 @@ router
 
         
         
-      }else if(userType==="sales"){ 
+      }else if(userType.toLowerCase()==="sales"){ 
         // console.log("sales user checkUser method will be triggered");
         console.log("Sales User route is hit!");
         const loginUser = await salesUsers.checkUser(emailAddress, password);
@@ -259,6 +264,28 @@ router
         };
 
         return res.render('salesdashboard', {title: 'Sales Dashboard', username: req.session.user.firstName});
+
+      }else if(userType.toLowerCase()==="management"){ 
+        // console.log("sales user checkUser method will be triggered");
+        console.log("Management User route is hit!");
+        const loginUser = await managementUsers.checkUser(emailAddress, password);
+        req.session.user = {
+          _id: loginUser._id,
+          firstName: loginUser.firstName,
+          middleName: loginUser.middleName,
+          lastName: loginUser.lastName,
+          emailAddress: loginUser.emailAddress,
+          phoneNumber: loginUser.phoneNumber, 
+          address: loginUser.address,
+          city: loginUser.city, 
+          state: loginUser.state, 
+          country: loginUser.country, 
+          dob: loginUser.dob,
+          role: loginUser.role
+          
+        };
+
+        return res.render('managementdashboard', {title: 'Management Dashboard', username: req.session.user.firstName});
 
       }
 
@@ -620,6 +647,63 @@ router.route('/sendApproval').get(async (req, res) => {
   
 });
 
+router.route('/managerApproved').get(async (req, res) => {
+  console.log("Send Approval Route is Triggered");
+  const custEmail = req.query.userID;
+
+  const custSelection = await salesUsers.getUserSelection(custEmail);
+  
+
+  console.log("Customer Email -> ", custEmail);
+
+  console.log("Cust sELECTION -> ", custSelection.selection);
+
+  
+
+
+  const approvedReqID = await managementUsers.addApprovedRequest(custEmail, custSelection.selection)
+  const updatedUser = await salesUsers.updateProgressScore(custEmail, 70, true, true, false, false);
+
+  let navBar = `<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+  <div class="container">
+    <a class="navbar-brand" href="#">SOLARIS T6</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/managementdashboard">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/aboutus">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/service">Services</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contact">Contact</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/userchat">Chat</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">logout</a>
+        </li>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>`
+
+  let successMsg = `<div id="success" class="success" > Successfully Approved by You [Manager] : Here is your RefID : ${approvedReqID}</div>`
+      
+      return res.render('success', {title: 'Approval Sent!', success: successMsg, navBar: navBar});
+
+  
+});
+
 
 // auth_routes.js
 
@@ -641,6 +725,38 @@ router.route('/userImages').get(async (req, res) => {
     res.status(500).send('Error reading user images.');
   }
 });
+
+router.route('/managementdashboard').get(async (res,req)=>{
+  console.log("Management Dashboard Route is called!")
+  res.render('managementdashboard', {title: 'Management Dashboard', username: req.session.user.firstName})
+});
+
+router.route('/viewAllApprovalRequests').get(async (req, res) => {
+  console.log("View All Management approval Req Route is called!");
+  const approvalRequests = await salesUsers.viewAllApprovalRequests();
+  const approvedList = await managementUsers.viewAllApprovedRequests();
+
+  console.log("Approval Req -> ", approvalRequests);
+  console.log("Approved Req -> ", approvedList);
+
+  const approvedListIDs = approvedList.map(item => item._id.$oid);
+
+  approvalRequests.forEach(request => {
+    request.isApproved = approvedListIDs.includes(request._id.$oid);
+  });
+
+  res.render('viewallapprovalrequests', {
+    title: 'Approval Requests',
+    approvalRequests: approvalRequests,
+    approvedList: approvedList,
+  });
+});
+
+
+
+
+
+
 
 
 

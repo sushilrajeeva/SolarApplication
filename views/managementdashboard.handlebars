@@ -57,7 +57,7 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" href="/salesdashboard">Home</a>
+            <a class="nav-link" href="/managementdashboard">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/aboutus">About</a>
@@ -84,11 +84,10 @@
 </head>
 <body>
   <div class="sidenav">
-    <a href="/salesdashboard">Welcome {{username}}!</a>
-    <a href="#" onclick="showContent('salesperson')">Salesperson</a>
-    <a href="/viewallbookings" >View Booking Details</a>
-        <a href="viewallcustomers" >View Customers</a>
-    <a href="#" onclick="showContent('installation-progress')">View Manager</a>
+    <a href="/managementdashboard">Welcome {{username}}!</a>
+    <a href="#" onclick="showContent('salesperson')">Management User</a>
+    <a href="/viewAllApprovalRequests" >View Approval Requests</a>
+        <a href="/viewCompletedUsers" >View Completed Users</a>
   </div>
 
   <!-- Add your content divs here -->
