@@ -285,8 +285,24 @@ export const agreementSigned = async (emailAddress) => {
 
 };
 
+export const viewCompletedUsers = async () => {
+  try {
+      const normalUsersCollection = await normalUsers();
+      const users = await normalUsersCollection.find({ finished: true}).toArray();
+
+      for(let i=0; i<users.length; i++){
+        users[i]._id = users[i]._id.toString();
+      }
+
+
+    return users;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 
 
 //confirm with TAs if this additional code is required since we are already exporting functions individually
-export default {bookDemo,createUser,checkUser, hasListing, agreementSigned}
+export default {bookDemo,createUser,checkUser, hasListing, agreementSigned, viewCompletedUsers}

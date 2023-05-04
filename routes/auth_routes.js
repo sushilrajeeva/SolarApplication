@@ -731,6 +731,13 @@ router.route('/managementdashboard').get(async (res,req)=>{
   res.render('managementdashboard', {title: 'Management Dashboard', username: req.session.user.firstName})
 });
 
+router.route('/viewCompletedUsers').get(async (req, res)=>{
+  console.log("View Completed Users route is triggered!");
+  const completedUsers = await normalUsers.viewCompletedUsers();
+  res.render('completedusers', {title: "Completed Users", completedUsers: completedUsers})
+
+})
+
 router.route('/viewAllApprovalRequests').get(async (req, res) => {
   console.log("View All Management approval Req Route is called!");
   const approvalRequests = await salesUsers.viewAllApprovalRequests();
