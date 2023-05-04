@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import middlewareMethods from '../middleware.js';
 import helpers from '../helpers.js';
 import normalUsers from '../data/normalUsers.js';
+import salesUsers from '../data/salesUsers.js'
 import feedback from '../data/feedback.js';
 import { ObjectId } from 'mongodb';
 import { solarSelection } from '../config/mongoCollections.js';
@@ -15,7 +16,7 @@ import multer from 'multer';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const username = req.body.username;
+    const username = req.session.user.emailAddress;
     const dir = `./public/img/${username}`;
 
     if (!fs.existsSync(dir)) {
@@ -161,6 +162,10 @@ router
       const userID = await normalUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
       let successMsg = `<div id="success" class="success" > User Registered Successfully! Ref ID is : ${userID}</div>`
       return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
+    }else if(userType.toLowerCase() === "sales"){
+      const userID = await salesUsers.createUser(userType, firstName, middleName, lastName, emailAddress, phoneNumber, address, city, state, country, dob, password);
+      let successMsg = `<div id="success" class="success" > Sales User Registered Successfully! Ref ID is : ${userID}</div>`
+      return res.render('signup', {title: 'Signup | Solaris T6', countryCodes: helpers.countryCodes, countryList: countryList, defaultCountry: helpers.defaultCountry, maxDate: maxDate, success: successMsg} )
     }
 
     
@@ -225,8 +230,8 @@ router
         
         
       }else{
-        // console.log("scout user checkUser method will be triggered");
-        // const loginUser = await scoutUsers.checkUser(emailAddress, password);
+        // console.log("sales user checkUser method will be triggered");
+        console.log("Sales User route is hit!");
       }
 
       //const loginUser = await users.checkUser(emailAddress, password);
@@ -391,7 +396,12 @@ router.route('/normaldashboard').get(async (req, res)=>{
   console.log("installation -> ", installation);
     console.log("agreement ->", agreement);
   res.render('normaldashboard', {title: 'User Dashboard', username: req.session.user.firstName, installation: installation, agreement: agreement})
-})
+});
+
+router.post('/upload', upload.single('image'), (req, res) => {
+  res.status(200).send('Image uploaded and saved.');
+});
+
 
 
 
