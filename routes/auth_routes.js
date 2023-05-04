@@ -10,9 +10,10 @@ import salesUsers from '../data/salesUsers.js'
 import feedback from '../data/feedback.js';
 import { ObjectId } from 'mongodb';
 import { solarSelection } from '../config/mongoCollections.js';
-
-import fs from 'fs';
+import path from 'path';
+import fs from 'fs/promises';
 import multer from 'multer';
+
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -618,6 +619,30 @@ router.route('/sendApproval').get(async (req, res) => {
 
   
 });
+
+
+// auth_routes.js
+
+
+
+// Other imports and existing routes
+
+router.route('/userImages').get(async (req, res) => {
+  const username = req.session.user.emailAddress;
+  const imageDir = path.join(process.cwd(), 'public', 'img', username);
+  const crewDir = path.join(process.cwd(), 'public', 'img', username, 'crew');
+
+  try {
+    const imageNames = await fs.readdir(imageDir);
+    const crewNames = await fs.readdir(crewDir);
+    return res.render('userImages', { title: 'User Images', imageNames: imageNames, username: username , crewNames: crewNames});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error reading user images.');
+  }
+});
+
+
 
 
 
